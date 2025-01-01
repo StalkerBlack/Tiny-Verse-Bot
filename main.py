@@ -60,7 +60,6 @@ async def claim_duster_for_client(token: str, proxy: str, client_name: str):
     async with AsyncSession() as session:
         while True:
             try:
-                # Check if proxy exists
                 if proxy:
                     response = await session.post(
                         url='https://api.tonverse.app/galaxy/collect',
