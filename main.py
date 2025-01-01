@@ -10,17 +10,18 @@ from logger import logger
 
 
 async def get_clients() -> list[tuple[str, str]]:
-    proxies: list[str] = await read_file_txt(file_path='proxies.txt')
     tokens: list[str] = await read_file_txt(file_path='tokens.txt')
+    proxies: list[str] = await read_file_txt(file_path='proxies.txt')
     
-    if len(proxies) != len(tokens):
-        logger.warning(f"Number of proxies and sessions do not match. Sessions: {len(tokens)} | Proxies: {len(proxies)}")
-
-    min_length = min(len(proxies), len(tokens))
-    if min_length == 0:
-        logger.error("Not enough data to create clients. Please check proxies.txt and tokens.txt files")
+    if len(tokens) == 0:
+        logger.error("No tokens found. Please check tokens.txt file")
         return []
 
+    if len(proxies) == 0:
+        logger.warning("No proxies found, program will run without them")
+        return [(token, '') for token in tokens]
+    
+    min_length = min(len(proxies), len(tokens))
     proxies = proxies[:min_length]
     tokens = tokens[:min_length]
     
@@ -38,7 +39,6 @@ async def get_clients() -> list[tuple[str, str]]:
     logger.debug(f'Initialized {len(clients)} clients for operation')
     
     return clients
-
 
 async def claim_duster_for_client(token: str, proxy: str, client_name: str):
     headers = {
@@ -60,12 +60,20 @@ async def claim_duster_for_client(token: str, proxy: str, client_name: str):
     async with AsyncSession() as session:
         while True:
             try:
-                response = await session.post(
-                    url='https://api.tonverse.app/galaxy/collect',
-                    proxy=proxy,
-                    headers=headers,
-                    data={'session': token}
-                )
+                # Check if proxy exists
+                if proxy:
+                    response = await session.post(
+                        url='https://api.tonverse.app/galaxy/collect',
+                        proxy=proxy,
+                        headers=headers,
+                        data={'session': token}
+                    )
+                else:
+                    response = await session.post(
+                        url='https://api.tonverse.app/galaxy/collect',
+                        headers=headers,
+                        data={'session': token}
+                    )
 
                 if response.status_code != 200:
                     logger.error(f'{client_name} | Request error: {response.status_code}')
