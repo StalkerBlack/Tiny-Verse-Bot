@@ -53,7 +53,7 @@ async def claim_duster_for_client(token: str, proxy: str, client_name: str):
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-site',
         'User-Agent': get_user_agent(),
-        'X-Application-Version': '0.7.37',
+        'X-Application-Version': '0.7.50',
         'X-Requested-With': 'XMLHttpRequest',
     }
 
